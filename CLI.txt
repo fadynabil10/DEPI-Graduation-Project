@@ -1,0 +1,72 @@
+project 9 : Creating a VPC Networking Environment for the Café
+
+
+aws ec2 create-vpc --cidr-block 10.0.0.0/16 --tag-specifications '{"ResourceType": "vpc", "Tags": [{"Key": "Name", "Value": "CafeVPC"}]}'
+aws ec2 create-subnet --vpc-id <vpc-id> --cidr-block 10.0.0.0/24 --availability-zone us-east-1a --tag-specifications '{"ResourceType": "subnet", "Tags": [{"Key": "Name", "Value": "CafeSubnet1"}]}'
+aws ec2 create-internet-gateway
+aws ec2 attach-internet-gateway --internet-gateway-id <ig-id> --vpc-id <vpc-id>
+aws ec2 create-route-table --vpc-id <vpc-id>
+aws ec2 associate-route-table --route-table-id <rt-id> --subnet-id <subnet-id>
+aws ec2 create-route --route-table-id <rt-id> --destination-cidr-block 0.0.0.0/0 --gateway-id <ig-id>
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+project 6 :Exploring AWS Identity and Access Management (IAM)
+
+
+aws iam create-user --user-name my-new-user
+aws iam create-group --group-name my-new-group
+aws iam add-user-to-group --user-name my-new-user --group-name my-new-group
+aws iam create-policy --policy-name my-new-policy --policy-document '{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:ListBucket",
+                "s3:GetObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::my-bucket/*"
+            ]
+        }
+    ]
+}'
+
+aws iam attach-user-policy --user-name my-new-user --policy-arn arn:aws:iam::your-account-id:policy/my-new-policy
+
+aws iam create-role --role-name my-new-role --assume-role-policy-document '{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "ec2.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+        }
+    ]
+}'
+
+
+
+//////////////////////////,/////////////////////////////////////////////////////
+
+project 10 :Creating a VPC Peering Connection
+
+aws ec2 create-vpc --cidr-block 10.0.0.0/16 --tag-specifications '{"ResourceType": "vpc", "Tags": [{"Key": "Name", "Value": "VPC1"}]}'
+aws ec2 create-vpc --cidr-block 172.31.0.0/16 --tag-specifications '{"ResourceType": "vpc", "Tags": [{"Key": "Name", "Value": "VPC2"}]}'
+# For VPC1
+aws ec2 create-subnet --vpc-id <vpc1-id> --cidr-block 10.0.0.0/24 --availability-zone us-east-1a
+aws ec2 create-subnet --vpc-id <vpc1-id> --cidr-block 10.0.1.0/24 --availability-zone us-east-1b
+
+# For VPC2
+aws ec2 create-subnet --vpc-id <vpc2-id> --cidr-block 172.31.0.0/24 --availability-zone us-east-1a
+aws ec2 create-subnet --vpc-id <vpc2-id> --cidr-block 172.31.1.0/24 --availability-zone us-east-1b
+
+aws ec2 create-vpc-peering-connection --requester-vpc-id <vpc1-id> --responder-vpc-id <vpc2-id>
+aws ec2 accept-vpc-peering-connection --vpc-peering-connection-id <vpc-peering-connection-id>
+aws ec2 describe-vpc-peering-connections --vpc-peering-connection-id <vpc-peering-connection-id>
+aws ec2 create-vpc-peering-connection --requester-vpc-id vpc-0123456789abcdef --responder-vpc-id vpc-0987654321fedcba
+
+
